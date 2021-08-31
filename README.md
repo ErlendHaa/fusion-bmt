@@ -70,11 +70,6 @@ If you wish to interact with endpoints directly during development, [disable aut
 
 The Schema used for the models in the backend can be found [here](https://backend-fusion-bmt-dev.radix.equinor.com/graphql?sdl).
 
-### Update frontend schema
-
-When the data models in the backend changes, the corresponding models in frontend has to be updated as well. This is done by executing the command `npm run schema` in the fronend directory while the backend server is also running. Then there will be created an updated `models.ts` in the src/api folder which contains the updated models.
-Note that to run this command you also might need to [disable authorization](#disable-authorization).
-
 ### Disable authorization
 
 It is sometimes useful to disable authorization for local development.
@@ -104,20 +99,94 @@ Cypress tests will be run in Azure DevOps when pushing to the upstream branch cy
 This can be done with the following command:
 `git push upstream HEAD:cypress -f`
 
-## Configuration
+## Database model and EF Core
 
-### Database configuration
+Our database model is defined in
+[C#](https://github.com/equinor/fusion-bmt/blob/master/backend/api/Models/Models.cs)
+and we use [Entity FrameWork Core](https://docs.microsoft.com/en-us/ef/core/)
+as an object-relational mapper (O/RM). When making changes to the model, we
+also need to create a new
+[migration](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
+and apply it to our databases.
 
-Make sure you have dotnet-ef installed: `dotnet tool install --global dotnet-ef`
-and that you have set your `Database__ConnectionString`.
+### Installing EF Core
 
-Check migrations existing in DB: `dotnet ef migrations list`
+```bash
+dotnet tool install --global dotnet-ef
+```
 
--   Create initial migration: `dotnet ef migrations add InitialCreate`
--   Delete database: `dotnet ef database drop`
--   Apply migrations: `dotnet ef database update`
--   Remove migrations: `dotnet ef migrations remove`
--   Roll back to earlier migration: `dotnet ef database update {migragtion-name}`
+### Creating a new migration
+
+After making changes to the model run (from `/backend/api`):
+
+```bash
+dotnet ef migrations add {migration-name}
+```
+
+`add` will make changes to existing files and add 2 new files in
+`backend/api/Migrations`, which all needs to be checked in to git.
+
+Note that the {migration name} is just a descriptive name of your choosing.
+Also note that `Database__ConnectionString` should be pointed at one of our
+databases when running `add`.
+
+If you for some reason is unhappy with your migration, you can delete it with
+
+```bash
+dotnet ef migrations remove
+```
+
+or simply delete the files and changes created by `add`. Once deleted you can
+make new changes to the model and then create a new migration with `add`.
+
+### Updating the frontend schema
+
+Our frontend also needs to know about the current database schema. Once a new
+migration is created, run:
+
+```bash
+npm run schema
+```
+
+from the `/frontend`-directory. This will update the frontend schema. These
+changes must also be checked in to git. Note that for `npm run schema` to run
+properly the backend must be running and authentication must be turned off.
+
+### Applying the migrations to the dev- and test database
+
+For the migration to take effect, we need to apply it to our databases. To get
+an overview of the current migrations in a database, set the correct
+`Database__ConnectionString` for that database and run:
+
+```bash
+dotnet ef migrations list
+```
+
+This will list all migrations that are applied to the database and the local
+migrations that are yet to be applied. The latter is denoted with the text
+(pending).
+
+To apply the pending migration to the database run:
+
+```bash
+dotnet ef database update
+```
+
+If everything runs smoothly the pending tag should be gone if you run `list`
+once more.
+
+#### When to apply the migration to our databases
+
+You can apply migrations to the test database at any time to test that it
+behaves as expected.
+
+Once the changes are merged to master you should apply the migration to the dev
+database.
+
+The prod database doesn't need to updated manually, as all migrations are
+applied to it automatically as part of the release to prod pipelines.
+
+### Populating databases with Questions
 
 For populating SQL database with question templates go to `backend/scripts`
 make sure your `Database__ConnectionString` is set and run
