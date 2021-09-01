@@ -85,6 +85,7 @@ Remember to change it back before committing!
 cd backend/api
 dotnet run
 ```
+
 ### Database model and EF Core
 
 Our database model is defined in
