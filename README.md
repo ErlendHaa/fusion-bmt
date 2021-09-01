@@ -102,10 +102,10 @@ This can be done with the following command:
 ## Database model and EF Core
 
 Our database model is defined in
-[C#](https://github.com/equinor/fusion-bmt/blob/master/backend/api/Models/Models.cs)
-and we use [Entity FrameWork Core](https://docs.microsoft.com/en-us/ef/core/)
-as an object-relational mapper (O/RM). When making changes to the model, we
-also need to create a new
+[`/backend/api/Models/Models.cs`](/backend/api/Models/Models.cs) and we use
+[Entity FrameWork Core](https://docs.microsoft.com/en-us/ef/core/) as an
+object-relational mapper (O/RM). When making changes to the model, we also need
+to create a new
 [migration](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 and apply it to our databases.
 
@@ -124,13 +124,15 @@ dotnet ef migrations add {migration-name}
 ```
 
 `add` will make changes to existing files and add 2 new files in
-`backend/api/Migrations`, which all needs to be checked in to git.
+`backend/api/Migrations`, which all need to be checked in to git.
 
-Note that the {migration name} is just a descriptive name of your choosing.
+Note that the {migration-name} is just a descriptive name of your choosing.
 Also note that `Database__ConnectionString` should be pointed at one of our
-databases when running `add`.
+databases when running `add. The reason for this is that the migration will be
+created slightly different when based of the in-memory database. `add` will *not*
+update or alter the connected database in any way.
 
-If you for some reason is unhappy with your migration, you can delete it with
+If you for some reason are unhappy with your migration, you can delete it with
 
 ```bash
 dotnet ef migrations remove
@@ -150,7 +152,8 @@ npm run schema
 
 from the `/frontend`-directory. This will update the frontend schema. These
 changes must also be checked in to git. Note that for `npm run schema` to run
-properly the backend must be running and authentication must be turned off.
+properly the backend must be running and [authorization must be turned
+off](#disable-authorization)
 
 ### Applying the migrations to the dev- and test database
 
@@ -163,10 +166,10 @@ dotnet ef migrations list
 ```
 
 This will list all migrations that are applied to the database and the local
-migrations that are yet to be applied. The latter is denoted with the text
+migrations that are yet to be applied. The latter are denoted with the text
 (pending).
 
-To apply the pending migration to the database run:
+To apply the pending migrations to the database run:
 
 ```bash
 dotnet ef database update
@@ -183,7 +186,7 @@ behaves as expected.
 Once the changes are merged to master you should apply the migration to the dev
 database.
 
-The prod database doesn't need to updated manually, as all migrations are
+The prod database doesn't need to be updated manually, as all migrations are
 applied to it automatically as part of the release to prod pipelines.
 
 ### Populating databases with Questions
