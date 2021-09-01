@@ -83,23 +83,7 @@ Remember to change it back before committing!
 cd backend/api
 dotnet run
 ```
-
-## Testing
-
-We are using Cypress as a test framework for End to End tests. Details can be found
-in [this section](frontend/cypress/README.md).
-
-Cypress E2E tests can be run locally with:
-`docker-compose -f docker-compose.cypress.yml up cypress`
-
-To run locally the two last lines in frontend/cypress.Dockerfile should be
-commented out.
-
-Cypress tests will be run in Azure DevOps when pushing to the upstream branch cypress.
-This can be done with the following command:
-`git push upstream HEAD:cypress -f`
-
-## Database model and EF Core
+### Database model and EF Core
 
 Our database model is defined in
 [`/backend/api/Models/Models.cs`](/backend/api/Models/Models.cs) and we use
@@ -109,13 +93,13 @@ to create a new
 [migration](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 and apply it to our databases.
 
-### Installing EF Core
+#### Installing EF Core
 
 ```bash
 dotnet tool install --global dotnet-ef
 ```
 
-### Creating a new migration
+#### Creating a new migration
 
 After making changes to the model run (from `/backend/api`):
 
@@ -141,7 +125,7 @@ dotnet ef migrations remove
 or simply delete the files and changes created by `add`. Once deleted you can
 make new changes to the model and then create a new migration with `add`.
 
-### Updating the frontend schema
+#### Updating the frontend schema
 
 Our frontend also needs to know about the current database schema. Once a new
 migration is created, run:
@@ -155,7 +139,7 @@ changes must also be checked in to git. Note that for `npm run schema` to run
 properly the backend must be running and [authorization must be turned
 off](#disable-authorization)
 
-### Applying the migrations to the dev- and test database
+#### Applying the migrations to the dev- and test database
 
 For the migration to take effect, we need to apply it to our databases. To get
 an overview of the current migrations in a database, set the correct
@@ -178,7 +162,7 @@ dotnet ef database update
 If everything runs smoothly the pending tag should be gone if you run `list`
 once more.
 
-#### When to apply the migration to our databases
+##### When to apply the migration to our databases
 
 You can apply migrations to the test database at any time to test that it
 behaves as expected.
@@ -189,12 +173,27 @@ database.
 The prod database doesn't need to be updated manually, as all migrations are
 applied to it automatically as part of the release to prod pipelines.
 
-### Populating databases with Questions
+#### Populating databases with Questions
 
 For populating SQL database with question templates go to `backend/scripts`
 make sure your `Database__ConnectionString` is set and run
 `dotnet run -t PATH-TO-FILE`. An example file of question templates:
 `backend/api/Context/InitQuestions.json`
+
+## Testing
+
+We are using Cypress as a test framework for End to End tests. Details can be found
+in [this section](frontend/cypress/README.md).
+
+Cypress E2E tests can be run locally with:
+`docker-compose -f docker-compose.cypress.yml up cypress`
+
+To run locally the two last lines in frontend/cypress.Dockerfile should be
+commented out.
+
+Cypress tests will be run in Azure DevOps when pushing to the upstream branch cypress.
+This can be done with the following command:
+`git push upstream HEAD:cypress -f`
 
 ## Deploy
 
